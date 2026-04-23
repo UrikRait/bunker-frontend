@@ -1,69 +1,166 @@
-# React + TypeScript + Vite
+#  Bunker 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Фронтенд часть игры **Bunker**, реализованная на стеке **React + TypeScript + Vite**.
+Приложение взаимодействует с backend через **REST API (axios)** и **WebSocket** для real-time обновлений.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+##  Основной функционал
 
-## Expanding the ESLint configuration
+### Лобби (создание и подключение)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* Создание комнаты
+* Подключение к существующей комнате по ID
+* Получение списка активных комнат
+* Копирование ID комнаты в буфер обмена
+* Валидация никнейма
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Работа с API
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+* `GET /api/rooms` — получить список комнат
+* `POST /api/rooms` — создать комнату
+* `POST /api/users` — подключиться к комнате
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Обработка ошибок:
+
+* Ошибки сервера (`response`)
+* Нет ответа (`request`)
+* Общие ошибки (`message`)
+
+### WebSocket
+
+* Подключение к комнате:
+
+```
+/api/wss/{room_id}/{user_id}/{username}
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Поддерживаемые события:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+* `get_users` — список игроков
+* `get_admin` — текущий ведущий
+* `update_player_card` — обновление карточек
+* `game_started` — старт игры
+* `ping/pong` — поддержание соединения
+* `user_disconnected` — отключение игрока
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+##  Игровая логика
+
+###  Игроки
+
+* Отображение списка игроков
+* Статусы:
+
+  * Готов / Не готов
+  * Жив / Мёртв
+  * Текущий ход
+* Сортировка по `user_id`
+
+###  Карточки
+
+Каждый игрок имеет характеристики:
+
+* Био
+* Профессия
+* Хобби
+* Здоровье
+* Фобия
+* Багаж
+* Доп. характеристика
+
+Логика:
+
+* Свои характеристики видны полностью
+* Чужие — скрыты до раскрытия
+
+###  Ведущий (Admin)
+
+Возможности:
+
+* Назначить себя ведущим
+* Начать игру (если все готовы)
+* Управлять игрой:
+
+  * Раскрыть характеристику (`reveal`)
+  * Поменять роли (`swap`)
+  * Убить игрока (`kill`)
+  * Передать ход (`change_turn`)
+
+---
+
+##  Основные компоненты
+
+### `getResponseList`
+
+Отвечает за:
+
+* Лобби
+* Взаимодействие с REST API
+* Создание/подключение к комнате
+* UI формы
+
+Ключевые состояния:
+
+```ts
+error: string | null
+userName: string
+inputRoomID: string
+getResponse: iTypes[]
+isGetLoading: boolean
+isPostLoading: boolean
 ```
+
+---
+
+### `RoomTest`
+
+Отвечает за:
+
+* Игровую комнату
+* WebSocket соединение
+* Отрисовку игроков и карточек
+* Логику ведущего
+
+Ключевые состояния:
+
+```ts
+players: iTypes[]
+cards: iTypes[]
+gameStarted: boolean
+playerAdmin: iTypes | undefined
+wsError: string | null
+```
+
+---
+
+##  Технологии
+
+*  React
+*  TypeScript
+*  axios
+*  WebSocket API
+*  react-router-dom
+
+---
+
+##  Переменные окружения
+
+Создайте `.env` файл:
+
+```env
+VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000
+```
+
+
+---
+
+##  Авторы
+
+* **Frontend:** https://github.com/urikrait
+* **Backend:** https://github.com/balybaleg
+
+---
+
