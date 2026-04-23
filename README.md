@@ -1,6 +1,7 @@
 #  Bunker 
 Домен - https://urikrait.online/
-Фронтенд часть игры **Bunker**, реализованная на стеке **React + TypeScript + Vite**.
+
+Фронтенд часть игры **Bunker**.
 Приложение взаимодействует с backend через **REST API (axios)** и **WebSocket** для real-time обновлений.
 
 ---
